@@ -14,9 +14,21 @@
 /* size of stack area used by each thread */
 #define STACKSIZE 1024
 
-/* scheduling priority used by each thread */
-#define PRIORITY 7
+/* Scheduling priority used by each thread.
+ * "A thread’s priority is an integer value, 
+ *  and can be either negative or non-negative. 
+ *  Numerically lower priorities takes precedence 
+ *  over numerically higher values."
+ * https://docs.zephyrproject.org/latest/kernel/services/threads/index.html#thread-priorities
+ */
+#define PRIORITY_A 7
+#define PRIORITY_B 8
+#define PRIORITY_C 9
+#define PRIORITY_UART 7
 
+/* Get a handle to the device from the device tree using an alias.
+ * Aliases are defined in boards/riscv/longan_nano/longan_nano-common.dtsi
+ */
 #define LED0_NODE DT_ALIAS(led0)
 #define LED1_NODE DT_ALIAS(led1)
 #define LED2_NODE DT_ALIAS(led2) 
@@ -27,6 +39,10 @@
 
 #if !DT_NODE_HAS_STATUS_OKAY(LED1_NODE)
 #error "Unsupported board: led1 devicetree alias is not defined"
+#endif
+
+#if !DT_NODE_HAS_STATUS_OKAY(LED2_NODE)
+#error "Unsupported board: led2 devicetree alias is not defined"
 #endif
 
 struct printk_data_t {
@@ -41,6 +57,7 @@ struct led {
 	struct gpio_dt_spec spec;
 	uint8_t num;
 };
+
 
 static const struct led led0 = {
 	.spec = GPIO_DT_SPEC_GET_OR(LED0_NODE, gpios, {0}),
@@ -124,14 +141,14 @@ void uart_out(void)
 
 // Leds threads
 K_THREAD_DEFINE(blink0_id, STACKSIZE, blink0, NULL, NULL, NULL,
-		PRIORITY, 0, 0);
+		PRIORITY_A, 0, 0);
 K_THREAD_DEFINE(blink1_id, STACKSIZE, blink1, NULL, NULL, NULL,
-		PRIORITY, 0, 0);
+		PRIORITY_B, 0, 0);
 K_THREAD_DEFINE(blink2_id, STACKSIZE, blink2, NULL, NULL, NULL,
-		PRIORITY, 0, 0);
+		PRIORITY_C, 0, 0);
 
 // UART Printing thread
 K_THREAD_DEFINE(uart_out_id, STACKSIZE, uart_out, NULL, NULL, NULL,
-		PRIORITY, 0, 0);
+		PRIORITY_UART, 0, 0);
 
 
